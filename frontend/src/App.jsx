@@ -26,7 +26,7 @@ function App() {
 
   const fetchProducts = async () => {
     try {
-      const res = await api.get('/products');
+      const res = await api.get('products');
       setProducts(res.data);
       if (res.data.length > 0) {
           const has16 = res.data.find(p => p.name.includes('16GB'));

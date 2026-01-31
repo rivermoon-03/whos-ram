@@ -59,6 +59,7 @@ api_router = APIRouter(prefix="/api")
 
 
 @app.get("/")
+@api_router.get("/")
 def read_root():
     return {"조선의 궁궐에 당도한 것을 환영하오": "낮선이여."}
 
