@@ -4,7 +4,8 @@ import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
 import './index.css'
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const isLocal = window.location.hostname === 'localhost';
+const API_BASE = import.meta.env.VITE_API_URL || (isLocal ? "http://localhost:8000" : "/api");
 const API_KEY = (import.meta.env.VITE_API_KEY || "your-secret-key-here").trim();
 
 const api = axios.create({

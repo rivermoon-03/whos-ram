@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks
+from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
@@ -19,7 +19,7 @@ models.Base.metadata.create_all(bind=engine)
 
 # API 키
 API_KEY_NAME = "X-API-KEY"
-API_KEY = os.getenv("API_KEY").strip()
+API_KEY = (os.getenv("API_KEY") or "your-secret-key-here").strip()
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
 
@@ -55,12 +55,15 @@ app.add_middleware(
 )
 
 
+api_router = APIRouter(prefix="/api")
+
+
 @app.get("/")
 def read_root():
     return {"조선의 궁궐에 당도한 것을 환영하오": "낮선이여."}
 
 
-@app.get("/products", response_model=List[schemas.ProductWithHistory])
+@api_router.get("/products", response_model=List[schemas.ProductWithHistory])
 def read_products(db: Session = Depends(get_db), _=Depends(verify_api_key)):
     # 램값들 조회
     seed_products(db)
@@ -123,7 +126,7 @@ def update_price_task(product_id: str, product_name: str):
         db.close()
 
 
-@app.post("/update")
+@api_router.post("/update")
 def update_prices(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
@@ -133,3 +136,6 @@ def update_prices(
     for product in products:
         background_tasks.add_task(update_price_task, product.id, product.name)
     return {"message": "업데이트 시작."}
+
+
+app.include_router(api_router)
