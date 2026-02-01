@@ -1,5 +1,6 @@
 import os
 import sys
+from concurrent.futures import ThreadPoolExecutor
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, APIRouter
@@ -70,24 +71,45 @@ def read_root():
 @api_router.get("/products", response_model=List[schemas.ProductWithHistory])
 def read_products(db: Session = Depends(get_db), _=Depends(verify_api_key)):
     # 램값들 조회
-    seed_products(db)
+    seed_products()
     return db.query(models.Product).all()
 
 
-def seed_products(db: Session):
+def seed_products():
     # 삼성 시금치 램들
     ram = [
         {"id": "52204538636", "name": "삼성전자 DDR5 PC5-44800 8GB"},
         {"id": "52204540637", "name": "삼성전자 DDR5 PC5-44800 16GB"},
         {"id": "52204543625", "name": "삼성전자 DDR5 PC5-44800 32GB"},
     ]
-    for t in ram:
-        exists = db.query(models.Product).filter(models.Product.id == t["id"]).first()
-        if not exists:
-            product = models.Product(id=t["id"], name=t["name"])
-            db.add(product)
-            db.commit()
-            update_price_single(db, product)
+
+    # 병렬 처리를 위한 작업자 함수
+    def process_product(t):
+        # 각 스레드마다 새로운 DB 세션 생성
+        local_db = database.SessionLocal()
+        try:
+            exists = (
+                local_db.query(models.Product)
+                .filter(models.Product.id == t["id"])
+                .first()
+            )
+            if not exists:
+                product = models.Product(id=t["id"], name=t["name"])
+                local_db.add(product)
+                local_db.commit()
+                # 가격 업데이트도 바로 수행
+                update_price_single(local_db, product)
+        except Exception as e:
+            print(f"Error processing {t['name']}: {e}")
+        finally:
+            local_db.close()
+
+    # 메인 스레드에서는 이미 데이터가 있는지 가볍게 체크할 수도 있지만,
+    # Vercel 콜드 스타트 시에는 비어있을 확률이 높으므로 바로 병렬 실행
+    # 단, 요청이 겹칠 경우를 대비해 DB 락/경합이 있을 수 있으나 SQLite/Postgres 기본 트랜잭션으로 처리
+
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        executor.map(process_product, ram)
 
 
 def update_price_single(db: Session, product: models.Product):
@@ -101,8 +123,6 @@ def update_price_single(db: Session, product: models.Product):
             if item["productId"] == product.id:
                 target_item = item
                 break
-
-        # 검색 결과에서 램 ID들로 정보 찾기
 
         if target_item:
             price = int(target_item["lprice"])
