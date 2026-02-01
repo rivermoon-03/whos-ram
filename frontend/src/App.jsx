@@ -5,7 +5,7 @@ import HighchartsReact from 'highcharts-react-official'
 import './index.css'
 
 const isLocal = window.location.hostname === 'localhost';
-const API_BASE = import.meta.env.VITE_API_URL || (isLocal ? "http://localhost:8000" : "/api");
+const API_BASE = import.meta.env.VITE_API_URL || (isLocal ? "http://localhost:8000/api" : "/api");
 const API_KEY = (import.meta.env.VITE_API_KEY || "your-secret-key-here").trim();
 
 const api = axios.create({
@@ -115,7 +115,15 @@ function ProductDisplay({ product }) {
     chart: { 
         backgroundColor: 'transparent',
         height: 350,
-        style: { fontFamily: 'Inter, sans-serif' }
+        style: { fontFamily: '"Pretendard Variable", -apple-system, sans-serif' }
+    },
+    time: {
+        timezoneOffset: -540 // GMT+9 (KST)
+    },
+    subtitle: {
+        text: 'KST 기준',
+        align: 'right',
+        style: { color: '#8b949e', fontSize: '10px' }
     },
     xAxis: { 
         type: 'datetime',

@@ -19,7 +19,9 @@ models.Base.metadata.create_all(bind=engine)
 
 # API 키
 API_KEY_NAME = "X-API-KEY"
-API_KEY = (os.getenv("API_KEY") or "your-secret-key-here").strip()
+API_KEY = (
+    os.getenv("VITE_API_KEY") or os.getenv("API_KEY") or "your-secret-key-here"
+).strip()
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
 
@@ -46,9 +48,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "*"
-    ],  # Vercel 환경에서는 더 유연하게 설정 (필요시 특정 도메인으로 제한 가능)
+    allow_origins=["*"],  # Vercel용 설정임.
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -72,7 +72,7 @@ def read_products(db: Session = Depends(get_db), _=Depends(verify_api_key)):
 
 
 def seed_products(db: Session):
-    # 삼성 램들
+    # 삼성 시금치 램들
     ram = [
         {"id": "52204538636", "name": "삼성전자 DDR5 PC5-44800 8GB"},
         {"id": "52204540637", "name": "삼성전자 DDR5 PC5-44800 16GB"},
