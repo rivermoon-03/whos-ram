@@ -19,6 +19,14 @@
       "destination": "/backend/main.py"
     },
     {
+      "source": "/docs",
+      "destination": "/backend/main.py"
+    },
+    {
+      "source": "/openapi.json",
+      "destination": "/backend/main.py"
+    },
+    {
       "source": "/assets/(.*)",
       "destination": "/frontend/assets/$1"
     },
