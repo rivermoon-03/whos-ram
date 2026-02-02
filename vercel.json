@@ -2,10 +2,6 @@
   "version": 2,
   "builds": [
     {
-      "src": "backend/main.py",
-      "use": "@vercel/python"
-    },
-    {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
@@ -14,18 +10,6 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/backend/main.py"
-    },
-    {
-      "source": "/docs",
-      "destination": "/backend/main.py"
-    },
-    {
-      "source": "/openapi.json",
-      "destination": "/backend/main.py"
-    },
     {
       "source": "/assets/(.*)",
       "destination": "/frontend/assets/$1"
@@ -37,12 +21,6 @@
     {
       "source": "/(.*)",
       "destination": "/frontend/index.html"
-    }
-  ],
-  "crons": [
-    {
-      "path": "/api/update",
-      "schedule": "0 0 * * *"
     }
   ]
 }

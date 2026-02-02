@@ -48,7 +48,11 @@ origins = [
     "http://localhost:5173",
     "http://localhost:3000",
     "*.vercel.app",  # Vercel 배포 도메인 허용
+    os.getenv("FRONTEND_URL"),  # Railway 배포 시 Vercel 도메인 명시
+    os.getenv("VITE_API_URL"),  # 혹시 모를 추가 도메인
 ]
+
+origins = [origin for origin in origins if origin]  # None 제거
 
 app.add_middleware(
     CORSMiddleware,
