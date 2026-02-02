@@ -1,0 +1,17 @@
+name: Cron Job
+
+on:
+  schedule:
+    - cron: "0 15 * * *" # UTC 15:00 -> KST 00:00
+
+jobs:
+  update-prices:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call API Update
+        run: |
+          curl -X POST ${{ secrets.BACKEND_URL }}/api/update \
+          -H "X-API-KEY: ${{ secrets.API_KEY }}"
+
+# 하루에 한 번씩 램값 수집.
+

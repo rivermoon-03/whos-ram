@@ -72,10 +72,15 @@ def read_root():
     return {"조선의 궁궐에 당도한 것을 환영하오": "낮선이여."}
 
 
+@app.on_event("startup")
+def startup_event():
+    # 앱 시작 시 DB 초기화 및 상품 시딩
+    seed_products()
+
+
 @api_router.get("/products", response_model=List[schemas.ProductWithHistory])
 def read_products(db: Session = Depends(get_db), _=Depends(verify_api_key)):
     # 램값들 조회
-    seed_products()
     return db.query(models.Product).all()
 
 

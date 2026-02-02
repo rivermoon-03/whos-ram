@@ -13,6 +13,8 @@ const api = axios.create({
   headers: { 'X-API-KEY': API_KEY }
 });
 
+console.log("Current API Base:", API_BASE); // Debugging Log
+
 const HighchartsReactComp = HighchartsReact.default || HighchartsReact;
 
 function App() {
