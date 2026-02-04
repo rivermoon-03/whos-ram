@@ -6,11 +6,16 @@ cmds = [
   # mise 설치
   "curl https://mise.run | sh",
   "export PATH=\"$HOME/.local/bin:$PATH\"",
-  # mise로 Python 설치
-  "mise install python@3.12.8",
+  # .python-version 파일 확인 (디버깅용)
+  "echo 'Python version from .python-version:' && cat .python-version || echo 'No .python-version file'",
+  # mise로 Python 설치 - 명시적으로 버전 지정
+  "mise install python@3.12.8 || mise install python@3.12",
   # mise 환경 활성화 및 Python 경로 설정
   "eval \"$(mise activate bash)\"",
   "export PATH=\"$HOME/.local/bin/mise/shims:$PATH\"",
+  # Python 버전 확인 (디버깅용)
+  "echo 'Installed Python version:' && python --version",
+  "which python",
   # 의존성 설치
   "cd backend && pip install --upgrade pip && pip install -r requirements.txt"
 ]
