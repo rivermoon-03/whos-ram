@@ -138,15 +138,15 @@ def update_price_single(db: Session, product: models.Product):
             price_history = models.PriceHistory(product_id=product.id, price=price)
             db.add(price_history)
             db.commit()
-            print(f"✅ {product.name}: {price}원 업데이트 완료")
+            print(f"{product.name}: {price}원 업데이트 완료")
             return {"success": True, "product": product.name, "price": price}
         else:
-            error_msg = f"❌ 검색 실패 {product.id}: {product.name} - API 결과에서 상품을 찾을 수 없습니다"
+            error_msg = f"검색 실패 {product.id}: {product.name} - API 결과에서 상품을 찾을 수 없습니다"
             print(error_msg)
             return {"success": False, "product": product.name, "error": "상품을 찾을 수 없습니다"}
 
     except Exception as e:
-        error_msg = f"❌ Error updating price for {product.name}: {str(e)}"
+        error_msg = f"Error updating price for {product.name}: {str(e)}"
         print(error_msg)
         db.rollback()  # 에러 발생 시 롤백
         return {"success": False, "product": product.name, "error": str(e)}
@@ -171,7 +171,7 @@ def update_prices(
     fail_count = 0
     
     for product in products:
-        print(f"🔄 업데이트 중: {product.name} (ID: {product.id})")
+        print(f"업데이트 중: {product.name} (ID: {product.id})")
         result = update_price_single(db, product)
         results.append(result)
         
