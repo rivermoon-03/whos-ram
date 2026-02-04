@@ -9,44 +9,27 @@ NAVER_CLIENT_ID = os.getenv("NAVER_CLIENT_ID")
 NAVER_CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET")
 
 # #region agent log
-log_path = "/home/rivermoon/Documents/Github/.cursor/debug.log"
-try:
-    with open(log_path, "a") as f:
-        f.write(json.dumps({
-            "sessionId": "debug-session",
-            "runId": "run1",
-            "hypothesisId": "A",
-            "location": "naver_api.py:8-9",
-            "message": "Environment variables loaded",
-            "data": {
-                "NAVER_CLIENT_ID_exists": NAVER_CLIENT_ID is not None,
-                "NAVER_CLIENT_ID_length": len(NAVER_CLIENT_ID) if NAVER_CLIENT_ID else 0,
-                "NAVER_CLIENT_SECRET_exists": NAVER_CLIENT_SECRET is not None,
-                "NAVER_CLIENT_SECRET_length": len(NAVER_CLIENT_SECRET) if NAVER_CLIENT_SECRET else 0,
-            },
-            "timestamp": int(__import__("time").time() * 1000)
-        }) + "\n")
-except Exception:
-    pass
+print(f"🔍 DEBUG: NAVER_CLIENT_ID exists: {NAVER_CLIENT_ID is not None}")
+print(f"🔍 DEBUG: NAVER_CLIENT_ID length: {len(NAVER_CLIENT_ID) if NAVER_CLIENT_ID else 0}")
+print(f"🔍 DEBUG: NAVER_CLIENT_SECRET exists: {NAVER_CLIENT_SECRET is not None}")
+print(f"🔍 DEBUG: NAVER_CLIENT_SECRET length: {len(NAVER_CLIENT_SECRET) if NAVER_CLIENT_SECRET else 0}")
+if NAVER_CLIENT_ID:
+    print(f"🔍 DEBUG: NAVER_CLIENT_ID first 5 chars: {NAVER_CLIENT_ID[:5]}...")
+if NAVER_CLIENT_SECRET:
+    print(f"🔍 DEBUG: NAVER_CLIENT_SECRET first 5 chars: {NAVER_CLIENT_SECRET[:5]}...")
 # #endregion
 
 
 def search_shop(query: str, display: int = 10, start: int = 1, sort: str = "sim"):
     # #region agent log
-    try:
-        with open(log_path, "a") as f:
-            f.write(json.dumps({
-                "sessionId": "debug-session",
-                "runId": "run1",
-                "hypothesisId": "B",
-                "location": "naver_api.py:35",
-                "message": "search_shop called",
-                "data": {"query": query, "display": display},
-                "timestamp": int(__import__("time").time() * 1000)
-            }) + "\n")
-    except Exception:
-        pass
+    print(f"🔍 DEBUG: search_shop called with query: {query}")
     # #endregion
+    
+    # 환경 변수 확인
+    if not NAVER_CLIENT_ID or not NAVER_CLIENT_SECRET:
+        error_msg = f"❌ 네이버 API 인증 정보가 설정되지 않았습니다. NAVER_CLIENT_ID: {'설정됨' if NAVER_CLIENT_ID else 'None'}, NAVER_CLIENT_SECRET: {'설정됨' if NAVER_CLIENT_SECRET else 'None'}"
+        print(error_msg)
+        raise ValueError(error_msg)
     
     url = "https://openapi.naver.com/v1/search/shop.json"
     headers = {
@@ -55,24 +38,8 @@ def search_shop(query: str, display: int = 10, start: int = 1, sort: str = "sim"
     }
     
     # #region agent log
-    try:
-        with open(log_path, "a") as f:
-            f.write(json.dumps({
-                "sessionId": "debug-session",
-                "runId": "run1",
-                "hypothesisId": "C",
-                "location": "naver_api.py:44",
-                "message": "API request headers before request",
-                "data": {
-                    "client_id_is_none": NAVER_CLIENT_ID is None,
-                    "client_secret_is_none": NAVER_CLIENT_SECRET is None,
-                    "client_id_empty": NAVER_CLIENT_ID == "" if NAVER_CLIENT_ID else True,
-                    "client_secret_empty": NAVER_CLIENT_SECRET == "" if NAVER_CLIENT_SECRET else True,
-                },
-                "timestamp": int(__import__("time").time() * 1000)
-            }) + "\n")
-    except Exception:
-        pass
+    print(f"🔍 DEBUG: API request headers - Client-ID is None: {NAVER_CLIENT_ID is None}, Client-Secret is None: {NAVER_CLIENT_SECRET is None}")
+    print(f"🔍 DEBUG: API request headers - Client-ID empty: {NAVER_CLIENT_ID == '' if NAVER_CLIENT_ID else 'N/A'}, Client-Secret empty: {NAVER_CLIENT_SECRET == '' if NAVER_CLIENT_SECRET else 'N/A'}")
     # #endregion
     
     params = {"query": query, "display": display, "start": start, "sort": sort}
@@ -80,22 +47,9 @@ def search_shop(query: str, display: int = 10, start: int = 1, sort: str = "sim"
     response = requests.get(url, headers=headers, params=params)
     
     # #region agent log
-    try:
-        with open(log_path, "a") as f:
-            f.write(json.dumps({
-                "sessionId": "debug-session",
-                "runId": "run1",
-                "hypothesisId": "D",
-                "location": "naver_api.py:54",
-                "message": "API response received",
-                "data": {
-                    "status_code": response.status_code,
-                    "response_text": response.text[:200] if response.text else None,
-                },
-                "timestamp": int(__import__("time").time() * 1000)
-            }) + "\n")
-    except Exception:
-        pass
+    print(f"🔍 DEBUG: API response status_code: {response.status_code}")
+    if response.status_code != 200:
+        print(f"🔍 DEBUG: API response text: {response.text[:200]}")
     # #endregion
     
     if response.status_code == 200:
