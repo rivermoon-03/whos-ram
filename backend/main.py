@@ -3,7 +3,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, APIRouter
+from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
@@ -138,37 +138,54 @@ def update_price_single(db: Session, product: models.Product):
             price_history = models.PriceHistory(product_id=product.id, price=price)
             db.add(price_history)
             db.commit()
-            print(f"{product.name}: {price}")
+            print(f"✅ {product.name}: {price}원 업데이트 완료")
+            return {"success": True, "product": product.name, "price": price}
         else:
-            print(f"검색 실패 {product.id}: {product.name}")
+            error_msg = f"❌ 검색 실패 {product.id}: {product.name} - API 결과에서 상품을 찾을 수 없습니다"
+            print(error_msg)
+            return {"success": False, "product": product.name, "error": "상품을 찾을 수 없습니다"}
 
     except Exception as e:
-        print(f"Error updating price for {product.name}: {e}")
-
-
-def update_price_task(product_id: str, product_name: str):
-    # 가격 업데이트 (24시간마다 cron으로 Vercel에서 실행)
-    db = database.SessionLocal()
-    try:
-        product = (
-            db.query(models.Product).filter(models.Product.id == product_id).first()
-        )
-        if product:
-            update_price_single(db, product)
-    finally:
-        db.close()
+        error_msg = f"❌ Error updating price for {product.name}: {str(e)}"
+        print(error_msg)
+        db.rollback()  # 에러 발생 시 롤백
+        return {"success": False, "product": product.name, "error": str(e)}
 
 
 @api_router.post("/update")
 def update_prices(
-    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     _=Depends(verify_api_key),
 ):
+    """
+    모든 제품의 가격을 업데이트합니다.
+    BackgroundTasks 대신 동기적으로 실행하여 Railway 환경에서도 안정적으로 작동합니다.
+    """
     products = db.query(models.Product).all()
+    
+    if not products:
+        return {"message": "업데이트할 제품이 없습니다.", "results": []}
+    
+    results = []
+    success_count = 0
+    fail_count = 0
+    
     for product in products:
-        background_tasks.add_task(update_price_task, product.id, product.name)
-    return {"message": "업데이트 시작."}
+        print(f"🔄 업데이트 중: {product.name} (ID: {product.id})")
+        result = update_price_single(db, product)
+        results.append(result)
+        
+        if result.get("success"):
+            success_count += 1
+        else:
+            fail_count += 1
+    
+    return {
+        "message": f"업데이트 완료. 성공: {success_count}, 실패: {fail_count}",
+        "success_count": success_count,
+        "fail_count": fail_count,
+        "results": results
+    }
 
 
 app.include_router(api_router)
