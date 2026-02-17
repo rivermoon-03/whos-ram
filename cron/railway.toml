@@ -1,0 +1,9 @@
+# Railway Cron 서비스 설정 (Root Directory: cron)
+# Cron Schedule는 대시보드에서 설정: 0 15 * * * (KST 00:00 = UTC 15:00)
+
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "python run.py"
+restartPolicyType = "never"

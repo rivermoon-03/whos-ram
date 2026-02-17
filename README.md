@@ -33,3 +33,8 @@ cd frontend
 npm install
 npm run dev
 ```
+
+### 4. Railway Cron (매일 KST 00:00 업데이트)
+
+Railway에서 매일 자정(KST)에 가격을 갱신하려면 `cron` 서비스를 추가하세요.  
+자세한 설정은 [cron/README.md](cron/README.md)를 참고하세요.
